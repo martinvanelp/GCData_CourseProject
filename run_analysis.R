@@ -27,24 +27,22 @@ trainData <- read.table("./UCI HAR Dataset/train/X_train.txt")
 columns <- sort(c(grep("mean()", features[,2], fixed = TRUE), 
                   grep("std()", features[,2], fixed = TRUE)))
 
-# describe activities
-testActivity <- merge(testActivity, activities, by = 1, sort = FALSE)
-trainActivity <- merge(trainActivity, activities, by = 1, sort = FALSE)
-
 # combine data with subject and activity
-test <- cbind(testSubject, testActivity[, 2], testData[, columns])
-train <- cbind(trainSubject, trainActivity[, 2], trainData[, columns])
-
-# name variables
-names(test) <- c("Subject", "Activity", features[, 2][columns])
-names(train) <- c("Subject", "Activity", features[, 2][columns])
+test <- cbind(testSubject, testActivity, testData[, columns])
+train <- cbind(trainSubject, trainActivity, trainData[, columns])
 
 # combine sets
 dataMerge <- rbind(test, train)
 
+# name variables
+names(dataMerge) <- c("Subject", "Activity", features[,2][columns])
+
+# describe activities
+dataMerge$Activity = factor(dataMerge$Activity, labels = activities[,2])
+
 # summarize data
 library(reshape2)
-dataMelt <- melt(merge, id = c("Subject", "Activity"),
+dataMelt <- melt(dataMerge, id = c("Subject", "Activity"),
              measure.vars = features[,2][columns])
 
 dataset <- dcast(dataMelt, Subject + Activity ~ variable, mean)
